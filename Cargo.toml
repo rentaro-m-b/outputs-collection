@@ -1,3 +1,4 @@
+workspace = { members = ["migration"] }
 [package]
 name = "outputs-collection"
 version = "0.1.0"
@@ -7,4 +8,7 @@ edition = "2021"
 
 [dependencies]
 axum = "0.7.5"
+http-body-util = "0.1.1"
+sea-orm = { version = "0.12.15", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
 tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
+tower = "0.4.13"
