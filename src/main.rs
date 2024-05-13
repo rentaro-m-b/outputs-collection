@@ -1,11 +1,5 @@
+use outputs_collection::presentation::route::launch_app;
 use tokio::net::TcpListener;
-use axum::http::StatusCode;
-
-use axum::{
-    routing::get,
-    response::{IntoResponse, Response},
-    Router
-};
 
 #[tokio::main]
 async fn main() {
@@ -13,15 +7,6 @@ async fn main() {
     let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
     println!("listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
-}
-
-fn launch_app() -> Router {
-    Router::new()
-        .route("/sample", get(sample_handler))
-}
-
-async fn sample_handler() -> Result<String, StatusCode> {
-    Ok("Hello, Axum!".to_owned())
 }
 
 // AppErrorは中間エラーである。ハンドラーからErrが返されても直ちにエラーとはならない。このエラーを用いて他のエラーをラップする
