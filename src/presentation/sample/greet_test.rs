@@ -5,7 +5,7 @@ use crate::presentation::route::launch_app;
 
 #[tokio::test]
 async fn greet() {
-    let app = launch_app();
+    let app = launch_app().await;
 
     let response = app
         .oneshot(Request::builder().uri("/sample").body(Body::empty()).unwrap())
