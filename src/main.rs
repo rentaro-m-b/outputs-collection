@@ -6,7 +6,7 @@ async fn main() {
     let app = launch_app();
     let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
     println!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app.await).await.unwrap();
 }
 
 // AppErrorは中間エラーである。ハンドラーからErrが返されても直ちにエラーとはならない。このエラーを用いて他のエラーをラップする
