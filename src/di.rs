@@ -16,8 +16,7 @@ impl DiContainer {
             .await;
         Self{ infra_provider }
     }
-     
-
+    
     pub fn create_user_usecase(&self) -> Arc<impl CreateUserUsecase> {
         println!("create user usecase start!");
         Arc::new(CreateUserUsecaseImpl {
