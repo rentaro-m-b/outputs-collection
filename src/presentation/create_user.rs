@@ -6,9 +6,8 @@ use serde::Deserialize;
 use serde_json::json;
 use axum::debug_handler;
 
-use crate::application::account::create_user::{CreateUserUsecase, CreateUserUsecaseImpl};
+use crate::application::account::create_user::CreateUserUsecase;
 use crate::di;
-use crate::presentation::error::create_user::Error as CreateUserApplicationError;
 
 #[derive(Deserialize)]
 pub struct Request {

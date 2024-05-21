@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use sea_orm::ActiveValue::Set;
 
 use crate::domain::repository::user::UserRepository;
-use crate::domain::model::user::{self, Model as UserModel, ActiveModel as UserActiveModel};
+use crate::domain::model::user::ActiveModel as UserActiveModel;
 use crate::application::account::error::create_user::Error as CreateUserApplicationError;
 
 #[async_trait]
