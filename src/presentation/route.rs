@@ -5,12 +5,16 @@ use axum::{Extension, Router};
 use crate::di;
 use crate::presentation::sample::greet::greet;
 use crate::presentation::create_user::create_user as create_user_presentation;
+use crate::presentation::middleware::authorization::AuthorizationMiddlewareLayer;
 
 pub async fn launch_app() -> Router {
     let di_container = Arc::new(di::DiContainer::new().await);
 
     Router::new()
-        .route("/sample", get(greet))
+        .nest("/sample", Router::new()
+            .route("", get(greet))
+            .layer(AuthorizationMiddlewareLayer::new(di_container.clone()).await)
+        )
         .route("/user", post(create_user_presentation))
-        .layer(Extension(di_container))
+        .layer(Extension(di_container.clone()))
 }

@@ -12,6 +12,7 @@ async-trait = "0.1.80"
 axum = { version = "0.7.5", features = ["macros"] }
 chrono = "0.4.38"
 dotenv = "0.15.0"
+futures-util = "0.3.30"
 http-body-util = "0.1.1"
 jsonwebtoken = "9.3.0"
 rand = "0.8.5"

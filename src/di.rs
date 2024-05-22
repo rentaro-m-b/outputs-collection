@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::infra::provider::Provider;
 use crate::application::account::create_user::{CreateUserUsecase, CreateUserUsecaseImpl};
-use crate::application::account::login::{LoginUsecase, LoginUsecaseImpl};
+use crate::application::account::authorization::{AuthorizationUsecase, AuthorizationUsecaseImpl};
 
 pub struct DiContainer {
     infra_provider: Provider
@@ -23,9 +23,9 @@ impl DiContainer {
         })
     }
 
-    pub fn login_usecase(&self) -> Arc<impl LoginUsecase> {
+    pub fn authorization_usecase(&self) -> Arc<impl AuthorizationUsecase> {
         println!("login usecase start!");
-        Arc::new(LoginUsecaseImpl {})
+        Arc::new(AuthorizationUsecaseImpl {})
     }
 }
 

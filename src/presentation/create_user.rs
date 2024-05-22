@@ -1,9 +1,7 @@
 use std::sync::Arc;
 use axum::http::StatusCode;
-use async_trait::async_trait;
 use axum::{Json, extract::Extension, response::IntoResponse};
 use serde::Deserialize;
-use serde_json::json;
 use axum::debug_handler;
 
 use crate::application::account::create_user::CreateUserUsecase;
