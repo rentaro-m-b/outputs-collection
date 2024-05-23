@@ -31,7 +31,7 @@ impl<S> Layer<S> for AuthorizationMiddlewareLayer {
 }
 
 #[derive(Clone)]
-struct AuthorizationMiddleware<S> {
+pub struct AuthorizationMiddleware<S> {
     inner: S,
     di_container: Arc<DiContainer>
 }
@@ -50,41 +50,39 @@ where
     }
 
     fn call(&mut self, req: Request) -> Self::Future {
-        let mut inner = self.inner.clone();
-        let fut = self.inner.call(req);
-        let token = match req.headers().get("Authrorization") {
-            Some(value) => match value.to_str() {
-                Ok(token) => token.trim_start_matches("Bearer "),
-                Err(_) => {
-                    let response = Response::builder()
-                        .status(StatusCode::UNAUTHORIZED)
-                        .body(Body::empty())
-                        .unwrap();
-                    return Box::pin(async { Ok(response.into_response())});
-                }
-            },
-            None => {
-                let response = Response::builder()
-                    .status(StatusCode::UNAUTHORIZED)
-                    .body(Body::empty())
-                    .unwrap();
-                return Box::pin(async { Ok(response.into_response())});
-            }
-        };
-    
         dotenv().ok();
         let secret_key = &env::var("SECRET_KEY").expect("SECRET_KEY must be set");
         let usecase = self.di_container.authorization_usecase();
-        
-        Box::pin(async move {
-            if usecase.login(token, secret_key).await.is_err() {
+
+        let token = if let Some(auth_header) = req.headers().get("Authrorization") {
+            if let Ok(auth_value) = auth_header.to_str() {
+                auth_value.trim_start_matches("Bearer ").to_owned()
+            } else {
                 let response = Response::builder()
                     .status(StatusCode::UNAUTHORIZED)
                     .body(Body::empty())
                     .unwrap();
-                return Ok(response.into_response());
+                return Box::pin(async { Ok(response.into_response())})
             }
+        } else {
+            let response = Response::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .body(Body::empty())
+                .unwrap();
+            return Box::pin(async { Ok(response.into_response())})
+        };
 
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        if rt.block_on(usecase.authorize(&token, secret_key)).is_err() {
+            let response = Response::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .body(Body::empty())
+                .unwrap();
+            return Box::pin(async { Ok(response.into_response())})
+        }
+        
+        let fut = self.inner.call(req);
+        Box::pin(async move {
             let res = fut.await?;
             Ok(res)
         })
