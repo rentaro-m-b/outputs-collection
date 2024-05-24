@@ -15,6 +15,8 @@ pub async fn launch_app() -> Router {
             .route("/", get(greet))
             .layer(AuthorizationMiddlewareLayer::new(di_container.clone()).await)
         )
-        .route("/user", post(create_user_presentation))
+        .nest("/user", Router::new()
+            .route("/", post(create_user_presentation))
+        )
         .layer(Extension(di_container.clone()))
 }
