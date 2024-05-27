@@ -1,23 +1,47 @@
+use std::sync::Arc;
 use argon2::{
     password_hash::{
         rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString
     },
     Argon2
 };
+use async_trait::async_trait;
 
-pub async fn hash_password(password: &str) -> Result<String, argon2::password_hash::Error> {
-    let password_bytes = password.as_bytes();
-    let salt = SaltString::generate(&mut OsRng);
-    let argon2 = Argon2::default();
-    Ok(argon2.hash_password(password_bytes, &salt)?.to_string())
+use crate::domain::repository::user::UserRepository;
+use crate::application::account::service::error::crypter::Error as CrypterServiceError;
+
+#[async_trait]
+pub trait CrypterService: Sync + Send {
+    async fn hash_password(&self, password: &str) -> Result<String, CrypterServiceError>;
+    async fn validate_password(&self, password: &str, password_hash: &str) -> Result<bool, CrypterServiceError>;
 }
 
-pub async fn parse_password_hash(password_hash: &str) -> Result<String, argon2::password_hash::Error> {
-    Ok(PasswordHash::new(password_hash)?.to_string())
+pub struct CrypterServiceImpl {
+    pub user_repository: Arc<dyn UserRepository + Sync + Send>,
 }
 
-pub async fn validate_password(password: &str, password_hash: &str) -> Result<bool, argon2::password_hash::Error> {
-    let password_bytes = password.as_bytes();
-    let parsed_password_hash = PasswordHash::new(password_hash)?;
-    Ok(Argon2::default().verify_password(password_bytes, &parsed_password_hash).is_ok())
+#[async_trait]
+impl CrypterService for CrypterServiceImpl {
+    async fn hash_password(&self, password: &str) -> Result<String, CrypterServiceError> {
+        let password_bytes = password.as_bytes();
+        let salt = SaltString::generate(&mut OsRng);
+        let argon2 = Argon2::default();
+        let password_hash = match argon2.hash_password(password_bytes, &salt) {
+            Ok(value) => value.to_string(),
+            Err(e) => return Err(CrypterServiceError::HashPasswordError(e.to_string()))
+        };
+
+        Ok(password_hash)
+    }
+    
+    // パスワードとパスワードハッシュ（User.password）の整合を検証
+    async fn validate_password(&self, password: &str, password_hash: &str) -> Result<bool, CrypterServiceError> {
+        let password_bytes = password.as_bytes();
+        let parsed_password_hash = match PasswordHash::new(password_hash) {
+            Ok(value) => value,
+            Err(e) => return Err(CrypterServiceError::HashPasswordError(e.to_string()))
+        };
+        
+        Ok(Argon2::default().verify_password(password_bytes, &parsed_password_hash).is_ok())
+    }    
 }
