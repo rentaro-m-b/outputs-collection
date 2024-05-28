@@ -21,7 +21,8 @@ impl DiContainer {
     pub fn create_user_usecase(&self) -> Arc<impl CreateUserUsecase> {
         println!("create user usecase start!");
         Arc::new(CreateUserUsecaseImpl {
-            user_repository: self.infra_provider.provide_user_repository()
+            user_repository: self.infra_provider.provide_user_repository(),
+            crypter_service: self.crypter_service()
         })
     }
 

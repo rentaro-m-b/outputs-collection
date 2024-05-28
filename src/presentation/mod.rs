@@ -4,3 +4,4 @@ pub mod test;
 pub mod error;
 pub mod create_user;
 pub mod middleware;
+pub mod login;
