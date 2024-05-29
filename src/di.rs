@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::application::account::login::{LoginUsecase, LoginUsecaseImpl};
+use crate::application::account::service::authentication::{AuthenticationService, AuthenticationServiceImpl};
 use crate::application::account::service::crypter::{CrypterService, CrypterServiceImpl};
 use crate::infra::provider::Provider;
 use crate::application::account::create_user::{CreateUserUsecase, CreateUserUsecaseImpl};
@@ -28,14 +29,17 @@ impl DiContainer {
 
     pub fn authorization_usecase(&self) -> Arc<impl AuthorizationUsecase> {
         println!("authorization usecase start!");
-        Arc::new(AuthorizationUsecaseImpl {})
+        Arc::new(AuthorizationUsecaseImpl {
+            authentication_service: self.authentication_service()
+        })
     }
 
     pub fn login_usecase(&self) -> Arc<impl LoginUsecase> {
         println!("login usecase start!");
         Arc::new(LoginUsecaseImpl {
             user_repository: self.infra_provider.provide_user_repository(),
-            crypter_service: self.crypter_service()
+            crypter_service: self.crypter_service(),
+            authentication_service: self.authentication_service()
         })
     }
     
@@ -43,6 +47,10 @@ impl DiContainer {
         Arc::new(CrypterServiceImpl {
             user_repository: self.infra_provider.provide_user_repository()
         })
+    }
+
+    fn authentication_service(&self) -> Arc<impl AuthenticationService> {
+        Arc::new(AuthenticationServiceImpl {})
     }
 }
 

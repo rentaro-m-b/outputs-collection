@@ -1,5 +1,6 @@
 use crate::domain::repository::error::user::Error as UserRepositoryError;
 use crate::application::account::service::error::crypter::Error as CrypterServiceError;
+use crate::application::account::service::error::authentication::Error as AuthenticationServiceError;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -7,5 +8,8 @@ pub enum Error {
     CrypterServiceError(#[from] CrypterServiceError),
 
     #[error("Failed to user repository: {0}")]
-    UserRepositoryError(#[from] UserRepositoryError)
+    UserRepositoryError(#[from] UserRepositoryError),
+
+    #[error("Failed to authentication service: {0}")]
+    AuthenticationServiceError(#[from] AuthenticationServiceError)
 }

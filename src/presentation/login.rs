@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use axum::http::StatusCode;
 use axum::{Json, extract::Extension, response::IntoResponse, response::Response};
+use sea_orm::sea_query::token;
 use serde::{Deserialize, Serialize};
 use axum::debug_handler;
 
@@ -33,11 +34,12 @@ pub async fn login(
     let usecase = di_container.login_usecase();
     let email = payload.email;
     let password = payload.password;
-    let response = MyResponse {
-        token: "token".to_string()
-    };
-    if let Ok(is_validated) = usecase.login(email, password).await {
-        Ok(response)
+
+    if let Ok(token) = usecase.login(email, password).await {
+        let response = MyResponse {
+            token: token
+        };
+        Ok(response.into_response())
     } else {
         Err(StatusCode::BAD_REQUEST)
     }

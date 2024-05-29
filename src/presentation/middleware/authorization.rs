@@ -1,4 +1,4 @@
-use axum::{body::Body, extract::Extension, extract::Request, response::Response, response::IntoResponse, http::StatusCode};
+use axum::{body::Body, extract::Request, response::Response, response::IntoResponse, http::StatusCode};
 use dotenv::dotenv;
 use std::{env, sync::Arc};
 use futures_util::future::BoxFuture;
@@ -73,7 +73,7 @@ where
         };
 
         let rt = tokio::runtime::Runtime::new().unwrap();
-        if rt.block_on(usecase.authorize(&token, secret_key)).is_err() {
+        if rt.block_on(usecase.authorize(&token)).is_err() {
             let response = Response::builder()
                 .status(StatusCode::UNAUTHORIZED)
                 .body(Body::empty())
