@@ -8,7 +8,7 @@ use crate::application::account::error::authorization::Error as AuthorizationApp
 
 #[async_trait]
 pub trait AuthorizationUsecase: Sync + Send {
-    async fn authorize(&self, token: &str) -> Result<TokenData<Claims>, AuthorizationApplicationError>;
+    async fn authorize(&self, token: String) -> Result<TokenData<Claims>, AuthorizationApplicationError>;
 }
 
 pub struct AuthorizationUsecaseImpl {
@@ -17,8 +17,8 @@ pub struct AuthorizationUsecaseImpl {
 
 #[async_trait]
 impl AuthorizationUsecase for AuthorizationUsecaseImpl {
-    async fn authorize(&self, token: &str) -> Result<TokenData<Claims>, AuthorizationApplicationError> {
-        let claims = self.authentication_service.validate_token(token).await?;
+    async fn authorize(&self, token: String) -> Result<TokenData<Claims>, AuthorizationApplicationError> {
+        let claims = self.authentication_service.validate_token(&token).await?;
         Ok(claims)
     }
 }

@@ -39,14 +39,15 @@ impl AuthenticationService for AuthenticationServiceImpl {
         };
     
         let secret_key_bytes = secret_key.as_bytes();
+        let header = Header::new(Algorithm::HS256);
     
-        Ok(encode(&Header::default(), &claims, &EncodingKey::from_secret(secret_key_bytes)).unwrap())
+        Ok(encode(&header, &claims, &EncodingKey::from_secret(secret_key_bytes)).unwrap())
     }
     
     async fn validate_token(&self, token: &str) -> Result<TokenData<Claims>, AuthenticationServiceError> {
         dotenv().ok();
         let secret_key = &env::var("SECRET_KEY").expect("SECRET_KEY must be set");
-        let mut validation = Validation::new(Algorithm::ES256);
+        let mut validation = Validation::new(Algorithm::HS256);
         validation.validate_exp = true;
         validation.validate_nbf = true;
     
@@ -58,4 +59,5 @@ impl AuthenticationService for AuthenticationServiceImpl {
         token_data.map_err(|e| AuthenticationServiceError::DecordTokenError(e.to_string()))
     }
 }
+
 

@@ -1,12 +1,14 @@
 use axum::{body::Body, extract::Request, response::Response, response::IntoResponse, http::StatusCode};
-use dotenv::dotenv;
-use std::{env, sync::Arc};
+use std::sync::Arc;
 use futures_util::future::BoxFuture;
 use tower::{Service, Layer};
 use std::task::{Context, Poll};
 
 use crate::di::DiContainer;
 use crate::application::account::authorization::AuthorizationUsecase;
+use crate::presentation::middleware::error::authorization::Error as AuthorizationMiddlewareError;
+use crate::application::account::error::authorization::Error as AuthorizationApplicationError;
+
 
 #[derive(Clone)]
 pub struct AuthorizationMiddlewareLayer {
@@ -50,11 +52,9 @@ where
     }
 
     fn call(&mut self, req: Request) -> Self::Future {
-        dotenv().ok();
-        let secret_key = &env::var("SECRET_KEY").expect("SECRET_KEY must be set");
         let usecase = self.di_container.authorization_usecase();
 
-        let token = if let Some(auth_header) = req.headers().get("Authrorization") {
+        let token = if let Some(auth_header) = req.headers().get("Authorization") {
             if let Ok(auth_value) = auth_header.to_str() {
                 auth_value.trim_start_matches("Bearer ").to_owned()
             } else {
@@ -72,18 +72,23 @@ where
             return Box::pin(async { Ok(response.into_response())})
         };
 
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        if rt.block_on(usecase.authorize(&token)).is_err() {
-            let response = Response::builder()
-                .status(StatusCode::UNAUTHORIZED)
-                .body(Body::empty())
-                .unwrap();
-            return Box::pin(async { Ok(response.into_response())})
-        }
+        let authorize_fut = async move {usecase.authorize(token).await};
         
         let fut = self.inner.call(req);
         Box::pin(async move {
+            match authorize_fut.await {
+                Ok(_) => println!("authorize ok!"),
+                Err(e) => {
+                    println!("{}", e);
+                    let response = Response::builder()
+                        .status(StatusCode::UNAUTHORIZED)
+                        .body(Body::empty())
+                        .unwrap();
+                    return Ok(response.into_response());
+                }
+            };
             let res = fut.await?;
+            
             Ok(res)
         })
     }

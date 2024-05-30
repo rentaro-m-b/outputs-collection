@@ -13,14 +13,12 @@ pub struct DiContainer {
 
 impl DiContainer {
     pub async fn new() -> Self {
-        println!("di container start!");
         let infra_provider = Provider::new()
             .await;
         Self{ infra_provider }
     }
     
     pub fn create_user_usecase(&self) -> Arc<impl CreateUserUsecase> {
-        println!("create user usecase start!");
         Arc::new(CreateUserUsecaseImpl {
             user_repository: self.infra_provider.provide_user_repository(),
             crypter_service: self.crypter_service()
@@ -28,14 +26,12 @@ impl DiContainer {
     }
 
     pub fn authorization_usecase(&self) -> Arc<impl AuthorizationUsecase> {
-        println!("authorization usecase start!");
         Arc::new(AuthorizationUsecaseImpl {
             authentication_service: self.authentication_service()
         })
     }
 
     pub fn login_usecase(&self) -> Arc<impl LoginUsecase> {
-        println!("login usecase start!");
         Arc::new(LoginUsecaseImpl {
             user_repository: self.infra_provider.provide_user_repository(),
             crypter_service: self.crypter_service(),
