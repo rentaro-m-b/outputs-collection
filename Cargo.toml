@@ -15,6 +15,7 @@ dotenv = "0.15.0"
 futures-util = "0.3.30"
 http-body-util = "0.1.1"
 jsonwebtoken = "9.3.0"
+memcache = "0.17.2"
 rand = "0.8.5"
 sea-orm = { version = "0.12.15", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
 serde = "1.0.201"

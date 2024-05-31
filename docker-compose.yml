@@ -14,5 +14,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  memcashed:
+    image: 'memcached:1.6-alpine'
+    ports:
+      - '127.0.0.1:11211:11211/tcp'
+    healthcheck:
+      test: ["CMD", "memcached-tool", "127.0.0.1:11211", "stats"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   pg_data:
